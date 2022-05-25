@@ -22,11 +22,20 @@ const server = async () => {
         client.connect();
         const database = client.db('hard_tools');
         const productCollection = database.collection('products');
+        const reviewCollection = database.collection('reviews');
 
         //? get all product
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        //? get all review
+        app.get('/reviews', async (req, res) => {
+            const query = {};
+            const cursor = reviewCollection.find(query);
             const result = await cursor.toArray();
             res.send(result)
         })
