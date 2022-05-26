@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const port = process.env.PORT || 5000;
 const app = express();
@@ -23,12 +23,21 @@ const server = async () => {
         const database = client.db('hard_tools');
         const productCollection = database.collection('products');
         const reviewCollection = database.collection('reviews');
+        const orderCollection = database.collection('orders');
 
         //? get all product
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        //? get single product by id
+        app.get('/products/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = {_id: ObjectId(id)};
+            const result = await productCollection.findOne(query);
             res.send(result)
         })
 
@@ -39,6 +48,7 @@ const server = async () => {
             const result = await cursor.toArray();
             res.send(result)
         })
+
     }
 
     finally {
