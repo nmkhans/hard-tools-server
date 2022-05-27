@@ -73,6 +73,13 @@ const server = async () => {
             res.send(result)
         })
 
+        //? post a review
+        app.post('/reviews', async(req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        })
+
         //? place a order
         app.post('/orders', async (req, res) => {
             const orderDetail = req.body;
