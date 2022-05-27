@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 //? database connection
-const uri = `mongodb+srv://MoinKhan:100504248668420123.@hard-tools.9fuogyz.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@hard-tools.9fuogyz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 //? database stablish
@@ -24,6 +24,7 @@ const server = async () => {
         const productCollection = database.collection('products');
         const reviewCollection = database.collection('reviews');
         const orderCollection = database.collection('orders');
+        const userCollection = database.collection('users');
 
         //? get all product
         app.get('/products', async (req, res) => {
@@ -36,7 +37,7 @@ const server = async () => {
         //? get single product by id
         app.get('/products/:id', async (req, res) => {
             const { id } = req.params;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const result = await productCollection.findOne(query);
             res.send(result)
         })
@@ -56,6 +57,20 @@ const server = async () => {
             res.send(result)
         })
 
+
+        //? register a user
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const option = { upsert: true };
+            const updateDoc = {
+                $set: user
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, option);
+            const token = jwt.sign({email: email}, process.env.ACCESS_TOKEN, {expiresIn: "1d"});
+            res.send({result, token: token})
+        })
     }
 
     finally {
