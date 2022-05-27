@@ -49,6 +49,13 @@ const server = async () => {
             res.send(result)
         })
 
+        //? place a order
+        app.post('/order', async (req, res) => {
+            const orderDetail = req.body;
+            const result = await orderCollection.insertOne(orderDetail);
+            res.send(result)
+        })
+
     }
 
     finally {
