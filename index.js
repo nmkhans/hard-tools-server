@@ -7,10 +7,23 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const app = express();
 
-
 //? middle were 
 app.use(cors());
 app.use(express.json());
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorized Access!' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+        if (error) {
+            return res.status(403).send({ message: "Access Forbidden!" })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 //? database connection
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@hard-tools.9fuogyz.mongodb.net/?retryWrites=true&w=majority`;
@@ -42,6 +55,14 @@ const server = async () => {
             res.send(result)
         })
 
+        //? get single product for checkout
+        app.get('/checkout/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { productId: id };
+            const result = await orderCollection.findOne(query);
+            res.send(result)
+        })
+
         //? get all review
         app.get('/reviews', async (req, res) => {
             const query = {};
@@ -60,7 +81,7 @@ const server = async () => {
         //? get a order by used email
         app.get('/orders/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email: email};
+            const query = { email: email };
             const cursor = orderCollection.find(query);
             const result = await cursor.toArray();
             res.send(result)
@@ -69,11 +90,10 @@ const server = async () => {
         //? delete a order
         app.delete('/orders/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const result = await orderCollection.deleteOne(query);
             res.send(result)
         })
-
 
         //? register a user
         app.put('/user/:email', async (req, res) => {
@@ -85,8 +105,8 @@ const server = async () => {
                 $set: user
             };
             const result = await userCollection.updateOne(filter, updateDoc, option);
-            const token = jwt.sign({email: email}, process.env.ACCESS_TOKEN, {expiresIn: "1d"});
-            res.send({result, token: token})
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: "1d" });
+            res.send({ result, token: token })
         })
     }
 
