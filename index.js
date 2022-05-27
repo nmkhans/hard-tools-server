@@ -51,9 +51,18 @@ const server = async () => {
         })
 
         //? place a order
-        app.post('/order', async (req, res) => {
+        app.post('/orders', async (req, res) => {
             const orderDetail = req.body;
             const result = await orderCollection.insertOne(orderDetail);
+            res.send(result)
+        })
+
+        //? get a order by used email
+        app.get('/orders/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email: email};
+            const cursor = orderCollection.find(query);
+            const result = await cursor.toArray();
             res.send(result)
         })
 
