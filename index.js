@@ -135,6 +135,14 @@ const server = async () => {
             res.send({ result, token: token })
         })
 
+        //? get all users
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const cursor = userCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
         //? get a user
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email;
@@ -163,6 +171,25 @@ const server = async () => {
             const result = await userCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
+
+        //? make a user admin
+        app.put('/user/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const requester = req.body.requester;
+            const requesterDetail = await userCollection.findOne({email: requester})
+            if(requesterDetail.role === "admin") {
+                const filter = {email: email};
+                const option = {upsert: true};
+                const updateDoc = {
+                    $set: {
+                        role: "admin"
+                    }
+                };
+                const result = await userCollection.updateOne(filter, updateDoc, option)
+                res.send(result);
+            }
+            
+        } )
 
         //? get payment by stripe
         app.post("/create-payment-intent", async (req, res) => {
