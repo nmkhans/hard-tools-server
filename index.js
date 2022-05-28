@@ -74,7 +74,7 @@ const server = async () => {
         })
 
         //? post a review
-        app.post('/reviews', async(req, res) => {
+        app.post('/reviews', async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
             res.send(result);
@@ -133,6 +133,35 @@ const server = async () => {
             const result = await userCollection.updateOne(filter, updateDoc, option);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: "1d" });
             res.send({ result, token: token })
+        })
+
+        //? get a user
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        })
+
+        //? update a user
+        app.patch('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const detail = req.body;
+            const phone = detail.phone;
+            const address = detail.address;
+            const facebook = detail.facebook;
+            const linkedin = detail.linkedin;
+            const filter = {email: email};
+            const updateDoc = {
+                $set: {
+                    phone: phone,
+                    address: address,
+                    facebookId: facebook,
+                    linkedId: linkedin,
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result)
         })
 
         //? get payment by stripe
