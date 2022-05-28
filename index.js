@@ -49,6 +49,13 @@ const server = async () => {
             res.send(result)
         })
 
+        //add a product
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.send(result)
+        })
+
         //? get single product by id
         app.get('/products/:id', async (req, res) => {
             const { id } = req.params;
